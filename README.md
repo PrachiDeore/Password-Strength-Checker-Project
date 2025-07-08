@@ -1,1 +1,136 @@
 # cybersecurity-project-2
+
+"""
+🔐 Password Strength Checker (Regex Based)
+
+This is a simple Python GUI app using Tkinter that checks the strength of a password.
+It uses regex to score the password based on:
+- Length (8+ characters)
+- Uppercase letter
+- Lowercase letter
+- Digit
+- Special character
+
+How to Run:
+-------------
+1. Make sure Python 3.x is installed.
+2. Save this file as password_checker.py
+3. Run with: python password_checker.py
+
+No external libraries required.
+
+Author: Your Name
+GitHub: https://github.com/your-username
+"""
+
+import tkinter as tk
+from tkinter import messagebox
+import re
+
+# Create main window
+window = tk.Tk()
+window.title("Password Strength Checker (Regex Based)")
+window.geometry("500x470")
+window.config(bg="#f4f6f9")
+
+# Strength bar canvas
+w = tk.Canvas(window, height=100, width=400, bg="#f4f6f9", highlightthickness=0)
+w.pack(pady=(10, 0))
+
+# Strength label
+label1 = tk.Label(window, text="", font=("Helvetica", 13, "bold"), bg="#f4f6f9")
+label1.place(x=190, y=260)
+
+# Message label
+strong_label = tk.Label(window, text="", font=("Helvetica", 11), fg="green", bg="#f4f6f9")
+strong_label.place(x=90, y=290)
+
+# Suggestion label
+suggestion_label = tk.Label(window, text="", font=("Helvetica", 10), fg="#e63946", bg="#f4f6f9", justify="left", wraplength=380)
+suggestion_label.place(x=55, y=320)
+
+# Toggle password visibility
+show_password = False
+def toggle_visibility():
+    global show_password
+    show_password = not show_password
+    entry.config(show="" if show_password else "*")
+    toggle_button.config(text="Hide Password" if show_password else "Show Password")
+
+# Suggestion logic
+def suggest_improvements(pw):
+    suggestions = []
+    if len(pw) < 8:
+        suggestions.append("• Use at least 8 characters.")
+    if not re.search(r"[A-Z]", pw):
+        suggestions.append("• Add at least one uppercase letter.")
+    if not re.search(r"[a-z]", pw):
+        suggestions.append("• Include at least one lowercase letter.")
+    if not re.search(r"\d", pw):
+        suggestions.append("• Add at least one number.")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pw):
+        suggestions.append("• Use at least one special character (!@#...).")
+    return "\n".join(suggestions)
+
+# Scoring logic
+def evaluate_password(pw):
+    score = 0
+    if len(pw) >= 8: score += 1
+    if re.search(r"[A-Z]", pw): score += 1
+    if re.search(r"[a-z]", pw): score += 1
+    if re.search(r"\d", pw): score += 1
+    if re.search(r"[!@#$%^&*(),.?\":{}|<>]", pw): score += 1
+    return score
+
+# Main check function
+def check():
+    w.delete("all")
+    strong_label["text"] = ""
+    label1["text"] = ""
+    suggestion_label["text"] = ""
+
+    pw = entry.get()
+
+    if pw == "":
+        messagebox.showinfo("Error", "Password can't be empty")
+        return
+
+    score = evaluate_password(pw)
+    percent = int((score / 5) * 100)
+    label1["text"] = f"{percent} %"
+
+    # Display result
+    if score == 5:
+        w.create_rectangle(50, 30, 350, 70, fill="#27cf54", outline="white")  # Green
+        strong_label["text"] = "✅ Excellent password!"
+    elif 3 <= score < 5:
+        w.create_rectangle(50, 30, 350, 70, fill="#f0f007", outline="white")  # Yellow
+        strong_label["text"] = "🟡 Good, but could be stronger."
+        suggestion_label["text"] = suggest_improvements(pw)
+    else:
+        w.create_rectangle(50, 30, 350, 70, fill="#de3c3c", outline="white")  # Red
+        strong_label["text"] = "❌ Weak password."
+        suggestion_label["text"] = suggest_improvements(pw)
+
+# GUI Header
+head = tk.Label(window, text="🔐 Password Strength Checker", font=("Helvetica", 17, "bold"), bg="#f4f6f9", fg="#333")
+head.pack(pady=15)
+
+# Entry label
+label = tk.Label(window, text="Enter Your Password", font=("Helvetica", 11, "bold"), bg="#f4f6f9")
+label.pack()
+
+# Entry field
+entry = tk.Entry(window, show="*", font=("Helvetica", 11), width=30, bd=2, relief="groove")
+entry.pack(pady=5)
+
+# Toggle button
+toggle_button = tk.Button(window, text="Show Password", font=("Helvetica", 9), command=toggle_visibility)
+toggle_button.pack(pady=(0, 10))
+
+# Check strength button
+button = tk.Button(window, text="Check Strength", font=("Helvetica", 11), bg="#4287f5", fg="white", command=check)
+button.pack(pady=5, ipadx=5, ipady=3)
+
+# Run app
+window.mainloop()
